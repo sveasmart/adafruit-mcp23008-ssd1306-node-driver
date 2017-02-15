@@ -12,6 +12,15 @@ That is, we can detect button presses and write stuff to the display.
 
 ## How to use it
 
+Try this to run a quick test. It echos button presses to the display.
+```javascript
+const adafruit = require("adafruit-mcp23008-ssd1306-node-driver ")
+adafruit.test()
+```
+
+
+Here's how to do it yourself:
+
 ```javascript
 const adafruit = require("adafruit-mcp23008-ssd1306-node-driver ")
 const ButtonDriver = adafruit.ButtonDriver
