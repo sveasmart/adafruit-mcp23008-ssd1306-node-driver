@@ -1,7 +1,7 @@
-const ButtonDriver = require("./button_driver")
-const DisplayDriver = require("./display_driver")
+const ButtonDriver = require("../button/button_driver")
+const DisplayDriver = require("../display/display_driver")
 
-function test() {
+function demo() {
   const busNumber = 1
 
   const displayAddress = 0x3c
@@ -18,5 +18,5 @@ function test() {
   console.log("Check the display...")
 }
 
-module.exports = test
+module.exports = demo
 
