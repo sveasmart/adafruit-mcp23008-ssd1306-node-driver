@@ -1,0 +1,19 @@
+{
+  "name": "mcp23008-node-driver",
+  "version": "1.0.0",
+  "description": "NodeJS driver for mcp23008. Lets you detect button clicks and draw on the display.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sveasmart/mcp23008-node-driver.git"
+  },
+  "author": "Henrik Kniberg",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/sveasmart/mcp23008-node-driver/issues"
+  },
+  "homepage": "https://github.com/sveasmart/mcp23008-node-driver#readme"
+}
