@@ -57,6 +57,30 @@ For example:
 displayDriver.getOled().invertDisplay(true)
 ```
 
+You can also display QR codes:
+
+```javascript
+displayDriver.qrCode("http://www.google.com")
+```
+
+## Testing
+
+If you are in a development environment with no access to the actual screen,
+you can use the fakes.
+
+```javascript
+const adafruit = require("adafruit-mcp23008-ssd1306-node-driver ")
+
+console.log("Has driver: ", adafruit.hasDriver())
+const fakeDisplayDriver = new adafruit.FakeDisplayDriver()
+const fakeButtonDriver = new adafruit.FakeButtonDriver()
+```
+
+* FakeDisplayDriver: has all the same methods as DisplayDriver,
+  but displays on the terminal instead of the SSD1306 display.
+* FakeButtonDriver: has all the same methods as ButtonDriver,
+  but you simulate button presses using your keyboard (press 0, 1, or 2).
+
 
 ## How it works internally
 
