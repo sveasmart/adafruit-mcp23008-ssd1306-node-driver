@@ -1,7 +1,5 @@
 const ButtonDriver = require("./button_driver")
-
-exports.printMsg = function() {
-  console.log("This is the first spike for the mcp23008-node-driver");
-}
+const DisplayDriver = require("./display_driver")
 
 exports.ButtonDriver = ButtonDriver
+exports.DisplayDriver = DisplayDriver

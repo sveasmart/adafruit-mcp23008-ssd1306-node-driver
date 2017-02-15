@@ -1,12 +1,18 @@
-const driver = require("./index")
-const ButtonDriver = driver.ButtonDriver
+const adafruit = require("./index")
+const ButtonDriver = adafruit.ButtonDriver
+const DisplayDriver = adafruit.DisplayDriver
 
 const busNumber = 1
-const address = 0x20
 
-const buttonDriver = new ButtonDriver(busNumber, address)
+const displayAddress = 0x3c
+const displayDriver = new DisplayDriver(busNumber, displayAddress)
+
+const buttonsAddress = 0x20
+const buttonDriver = new ButtonDriver(busNumber, buttonsAddress)
+
 buttonDriver.watchAllButtons(function(buttonPin) {
-  console.log("Clicked button #" + buttonPin)
+  displayDriver.text("Clicked button #" + buttonPin)
 })
 
-console.log("OK, click some buttons")
+displayDriver.text("OK, click some buttons")
+console.log("Check the display...")

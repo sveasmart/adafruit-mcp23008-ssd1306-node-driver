@@ -10,29 +10,30 @@ That is, we can detect button presses and write stuff to the display.
 
 `npm install adafruit-mcp23008-ssd1306-node-driver`
 
-## How to detect button presses
-
-First you need a ButtonDriver with the right config for you system:
+## How to use it
 
 ```javascript
-const adafruit = require("adafruit-mcp23008-ssd1306-node-driver")
+const adafruit = require("adafruit-mcp23008-ssd1306-node-driver ")
 const ButtonDriver = adafruit.ButtonDriver
+const DisplayDriver = adafruit.DisplayDriver
 
 const busNumber = 1
-const address = 0x20
 
-const buttonDriver = new ButtonDriver(busNumber, address)
-```
+const displayAddress = 0x3c
+const displayDriver = new DisplayDriver(busNumber, displayAddress)
 
-Then you can watch all buttons:
+const buttonsAddress = 0x20
+const buttonDriver = new ButtonDriver(busNumber, buttonsAddress)
 
-```javascript
 buttonDriver.watchAllButtons(function(buttonPin) {
-  console.log("Clicked button #" + buttonPin)
+  displayDriver.text("Clicked button #" + buttonPin)
 })
+
+displayDriver.text("OK, click some buttons")
+console.log("Check the display...")
 ```
 
-Or just watch one button:
+You can also watch just one button:
 
 ```javascript
 buttonDriver.watchButton(1, function(buttonPin) {
@@ -40,9 +41,13 @@ buttonDriver.watchButton(1, function(buttonPin) {
 })
 ```
 
-## How to write stuff on the display
+For access to the full [oled api](https://www.npmjs.com/package/oled-i2c-bus)
+use ```displayDriver.oled```.
+For example:
+```javascript
+displayDriver.oled.invertDisplay(true)
+```
 
-(coming soon)
 
 ## How it works internally
 
