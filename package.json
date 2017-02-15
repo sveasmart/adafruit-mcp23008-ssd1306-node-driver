@@ -1,6 +1,6 @@
 {
   "name": "adafruit-mcp23008-ssd1306-node-driver",
-  "version": "1.0.6",
+  "version": "1.0.8",
   "description": "NodeJS wrapper for Adafruit mcp23008 and SSD1306. Lets you detect button clicks and draw on the display.",
   "main": "index.js",
   "scripts": {
@@ -18,7 +18,12 @@
   "homepage": "https://github.com/sveasmart/mcp23008-node-driver#readme",
   "dependencies": {
     "i2c-bus": "1.2.1",
+    "lwip": "0.0.9",
+    "node-qr-image": "0.0.1",
     "oled-font-5x7": "1.0.0",
-    "oled-i2c-bus": "1.0.9"
+    "oled-i2c-bus": "1.0.9",
+    "png-to-lcd": "^1.0.3",
+    "qrcode-terminal": "0.11.0",
+    "stream-to-array": "^2.3.0"
   }
 }

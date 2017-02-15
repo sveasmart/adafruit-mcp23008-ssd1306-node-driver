@@ -51,10 +51,10 @@ buttonDriver.watchButton(1, function(buttonPin) {
 ```
 
 For access to the full [oled api](https://www.npmjs.com/package/oled-i2c-bus)
-use ```displayDriver.oled```.
+use ```displayDriver.getOled()```.
 For example:
 ```javascript
-displayDriver.oled.invertDisplay(true)
+displayDriver.getOled().invertDisplay(true)
 ```
 
 

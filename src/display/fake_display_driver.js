@@ -1,3 +1,5 @@
+const qrCodeTerminal = require('qrcode-terminal')
+
 /**
  * Fake version of DisplayDriver.
  * Useful for testing purposes when you don't have the real hardware.
@@ -8,7 +10,12 @@ class FakeDisplayDriver {
   }
 
   text(message) {
-    console.log("[FakeDisplay] " + message)
+    console.log("[FakeDisplay text] " + message)
+  }
+
+  qrCode(text) {
+    console.log("[FakeDisplay image]")
+    qrCodeTerminal.generate(text)
   }
 }
 
