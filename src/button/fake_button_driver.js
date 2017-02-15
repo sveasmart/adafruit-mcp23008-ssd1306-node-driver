@@ -1,5 +1,6 @@
 /**
  * A fake version of ButtonDriver.
+ * Useful for testing purposes when you don't have the real hardware.
  * Simulate button clicks by typing '0', '1', or '2' directly in the console.
  */
 
