@@ -17,12 +17,16 @@ class DisplayDriver {
 
   text(message) {
     var oled = this.getOled()
-    oled.turnOnDisplay()
     oled.fillRect(0, 0, this.width, this.height, 0);
     oled.setCursor(1,1)
     oled.writeString(this.font, 1, message, 1, true)
     oled.update()
+  }
 
+  clear() {
+    var oled = this.getOled()
+    oled.fillRect(0, 0, this.width, this.height, 0);
+    oled.update()
   }
 
   getOled() {
