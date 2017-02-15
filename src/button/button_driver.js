@@ -1,5 +1,3 @@
-const i2c = require('i2c-bus')
-
 const MCP23017_IODIRA = 0x00
 const MCP23008_GPPUA  = 0x06
 const MCP23008_GPIOA  = 0x09
@@ -10,6 +8,7 @@ const GPIO_IN = 1
 
 class ButtonDriver {
   constructor(busNumber, address) {
+    const i2c = require('i2c-bus')
     this.bus = i2c.openSync(busNumber)
     this.address = address
   }

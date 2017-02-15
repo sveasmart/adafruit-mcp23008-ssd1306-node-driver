@@ -1,10 +1,10 @@
-const i2c = require('i2c-bus')
-const oledBus = require('oled-i2c-bus');
-
-const font = require('oled-font-5x7');
 
 class DisplayDriver {
   constructor(busNumber, address, width, height) {
+    this.i2c = require('i2c-bus')
+    this.oledBus = require('oled-i2c-bus');
+    this.font = require('oled-font-5x7');
+
     this.busNumber = busNumber ? busNumber : 1
     this.address = address ? address : 0x3C
     this.width = width ? width : 128
@@ -12,7 +12,7 @@ class DisplayDriver {
   }
 
   text(message) {
-    const bus = i2c.openSync(this.busNumber)
+    const bus = this.i2c.openSync(this.busNumber)
 
     var opts = {
       width: this.width,
@@ -20,10 +20,10 @@ class DisplayDriver {
       address: this.address
     };
 
-    const oled = new oledBus(bus, opts);
+    const oled = new this.oledBus(bus, opts);
     oled.fillRect(0, 0, this.width, this.height, 0);
     oled.setCursor(1,1)
-    oled.writeString(font, 1, message, 1, true)
+    oled.writeString(this.font, 1, message, 1, true)
     oled.update()
   }
 }
