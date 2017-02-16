@@ -20,6 +20,12 @@ class FakeButtonDriver {
     console.log("Using FakeButtonDriver. Type 0, 1, or 2 to simulate a button click on the respective pin.")
     var stdin = process.stdin;
 
+    if (!stdin || !(stdin.setRawMode)) {
+      console.log("I don't have a stdin.setRawMode. Probably means I'm not running in an interactive console. " +
+        "Anyway that means FakeButtonDriver has no way of receiving fake button clicks via key presses. Sorry.")
+      return
+    }
+
     // without this, we would only get streams once enter is pressed
     stdin.setRawMode( true );
 
