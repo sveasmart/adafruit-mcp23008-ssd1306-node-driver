@@ -4,6 +4,13 @@ const lwip = require('lwip')
 const fs = require("fs")
 
 class DisplayDriver {
+  /**
+   * 
+   * @param busNumber default 1
+   * @param address default 0x3C
+   * @param width default 128
+   * @param height default 64
+   */
   constructor(busNumber, address, width, height) {
     this.i2c = require('i2c-bus')
     this.oledBus = require('oled-i2c-bus');

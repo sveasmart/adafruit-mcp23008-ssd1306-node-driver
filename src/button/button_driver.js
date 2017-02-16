@@ -7,7 +7,15 @@ const POLL_INTERVAL = 10
 const GPIO_IN = 1
 
 class ButtonDriver {
+  /**
+   *
+   * @param busNumber default 1
+   * @param address default 0x20
+   */
   constructor(busNumber, address) {
+    busNumber = busNumber ? busNumber : 1
+    address = address ? address : 0x20
+
     const i2c = require('i2c-bus')
     this.bus = i2c.openSync(busNumber)
     this.address = address
