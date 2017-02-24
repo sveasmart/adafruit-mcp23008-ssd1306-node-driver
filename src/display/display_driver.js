@@ -1,6 +1,9 @@
 const qr = require('node-qr-image')
 const toArray = require('stream-to-array')
 const lwip = require('lwip')
+const Jimp = require('jimp')
+const path = require('path')
+
 const fs = require("fs")
 
 class DisplayDriver {
@@ -45,7 +48,7 @@ class DisplayDriver {
     });
   }
 
-  qrCode(text) {
+  qrCode(text, whiteOnBlack) {
     var png = qr.image(text, {
       type: 'png',
       size: '64'
@@ -53,58 +56,34 @@ class DisplayDriver {
 
     const oled = this.getOled()
 
-    var pngtolcd = require('png-to-lcd');
 
     toArray(png)
       .then(function (parts) {
         const buffers = parts.map(part => Buffer.from(part));
         const buffer = Buffer.concat(buffers);
 
-        lwip.open(buffer, "png", function(err, image){
-
+        cropImage(buffer, whiteOnBlack, function(err, croppedBuffer) {
           // check err...
           if (err) {
             console.log(err)
             return
           }
 
-          // check err...
-          // manipulate image:
-          image.crop(128+64, 64, function(err, image){
-            // check err...
+          const fileName = "qrcode-cropped.png"
+          fs.writeFileSync(fileName, croppedBuffer)
+
+
+          var pngtolcd = require('png-to-lcd');
+          pngtolcd(fileName, false, function(err, bitmap) {
             if (err) {
-              console.log(err)
+              console.log("Error while generating QR code!", err)
               return
             }
-
-            // encode to png and get a buffer object:
-            image.toBuffer('png', function(err, croppedBuffer){
-
-              // check err...
-              if (err) {
-                console.log(err)
-                return
-              }
-
-              const fileName = "qrcode-cropped.png"
-              fs.writeFileSync(fileName, croppedBuffer)
-
-
-              pngtolcd(fileName, false, function(err, bitmap) {
-                if (err) {
-                  console.log("Error while generating QR code!", err)
-                  return
-                }
-                oled.buffer = bitmap;
-                oled.update();
-                fs.unlinkSync(fileName)
-              });
-
-            });
-
+            oled.buffer = bitmap;
+            oled.update();
+            fs.unlinkSync(fileName)
           });
-
-        });
+        })
 
       })
       .catch(function(err) {
@@ -113,6 +92,30 @@ class DisplayDriver {
 
 
   }
+}
+
+
+
+/**
+ * Crops the given buffer and sends a new buffer to the given callback
+ */
+function cropImage(sourceBuffer, whiteOnBlack, callback) {
+  const emptyImageFile = path.resolve(__dirname, 'empty-128x64-image.png')
+  console.log("file", emptyImageFile)
+
+  Jimp.read(emptyImageFile).then(function (image) {
+    Jimp.read(sourceBuffer).then(function (image2) {
+      //add a .invert() to invert it.
+      image = image.composite(image2, 0, 0)
+      if (whiteOnBlack) {
+        image = image.invert()
+      }
+      image.getBuffer(Jimp.MIME_PNG, callback)
+    })
+  }).catch(function (err) {
+    console.log(err)
+    callback(err)
+  });
 }
 
 module.exports = DisplayDriver
