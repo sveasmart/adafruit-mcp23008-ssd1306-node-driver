@@ -1,6 +1,5 @@
 const qr = require('node-qr-image')
 const toArray = require('stream-to-array')
-const lwip = require('lwip')
 const Jimp = require('jimp')
 const path = require('path')
 
