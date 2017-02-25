@@ -11,10 +11,14 @@ function demo() {
   const buttonDriver = new ButtonDriver(busNumber, buttonsAddress)
 
   buttonDriver.watchAllButtons(function(buttonPin) {
-    displayDriver.text("Clicked button #" + buttonPin)
+    if (buttonPin == 2) {
+      displayDriver.qrCode("http://google.com")
+    } else {
+      displayDriver.text("Clicked #" + buttonPin)
+    }
   })
 
-  displayDriver.text("OK, click some buttons")
+  displayDriver.text("Click me!")
   console.log("Check the display...")
 }
 

@@ -21,9 +21,9 @@
     "jimp": "0.2.27",
     "node-qr-image": "0.0.1",
     "oled-font-5x7": "1.0.0",
-    "oled-i2c-bus": "1.0.9",
-    "png-to-lcd": "1.0.3",
+    "pngparse": "2.0.1",
     "qrcode-terminal": "0.11.0",
-    "stream-to-array": "2.3.0"
+    "stream-to-array": "2.3.0",
+    "rpio": "0.9.14"
   }
 }
