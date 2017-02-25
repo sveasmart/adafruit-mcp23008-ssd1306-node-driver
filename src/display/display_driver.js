@@ -114,6 +114,14 @@ class DisplayDriver {
 
 
     this._i2c = require('i2c-bus').openSync(this.busNumber)
+    
+    // Save vcc state.
+    this._vccstate = vccstate
+    // Reset and initialize display.
+    this.reset()
+    this._initialize()
+    //Turn on the display.
+    this.command(SSD1306_DISPLAYON)
 
   }
 
@@ -160,14 +168,6 @@ class DisplayDriver {
     this.command(SSD1306_DISPLAYALLON_RESUME)           // 0xA4
     this.command(SSD1306_NORMALDISPLAY)                 // 0xA6
 
-
-    // Save vcc state.
-    this._vccstate = vccstate
-    // Reset and initialize display.
-    this.reset()
-    this._initialize()
-    //Turn on the display.
-    this.command(SSD1306_DISPLAYON)
 
   }
 
