@@ -116,7 +116,7 @@ class DisplayDriver {
     this._i2c = require('i2c-bus').openSync(this.busNumber)
     
     // Save vcc state.
-    this._vccstate = vccstate
+    this._vccstate = SSD1306_SWITCHCAPVCC
     // Reset and initialize display.
     this.reset()
     this._initialize()
