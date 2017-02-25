@@ -3,7 +3,6 @@ const display = new adafruit.DisplayDriver()
 
 
 console.log("beginning...")
-display.begin()
 display.clear()
 
 //display.qrCode("http://vi.i/asdf#asdfgdfsdfg")

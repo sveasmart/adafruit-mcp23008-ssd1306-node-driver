@@ -159,18 +159,8 @@ class DisplayDriver {
     this.command(0x40)
     this.command(SSD1306_DISPLAYALLON_RESUME)           // 0xA4
     this.command(SSD1306_NORMALDISPLAY)                 // 0xA6
-  }
 
-  command(c) {
-    //console.log("c", c)
-    var control = 0x00   // Co = 0, DC = 0
-    this._i2c.writeByteSync(this.address, control, c)
-  }
 
-  begin(vccstate) {
-    if (!vccstate) {
-      vccstate = SSD1306_SWITCHCAPVCC
-    }
     // Save vcc state.
     this._vccstate = vccstate
     // Reset and initialize display.
@@ -179,6 +169,12 @@ class DisplayDriver {
     //Turn on the display.
     this.command(SSD1306_DISPLAYON)
 
+  }
+
+  command(c) {
+    //console.log("c", c)
+    var control = 0x00   // Co = 0, DC = 0
+    this._i2c.writeByteSync(this.address, control, c)
   }
 
   reset() {
