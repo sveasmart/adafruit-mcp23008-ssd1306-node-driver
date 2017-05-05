@@ -1,0 +1,22 @@
+require
+- First time took:  2517 ms
+- Second time took: 0 ms
+- Third time took:  0 ms
+
+constructor
+- First time took:  87 ms
+- Second time took: 14 ms
+- Third time took:  13 ms
+
+text()
+- First time took:  524 ms
+- Second time took: 379 ms
+- Third time took:  401 ms
+
+writeByteSync 1000 times
+- First time took:  505 ms
+- Second time took: 352 ms
+- Third time took:  311 ms
+
+Execute writeByte 10 times async but in sequence:
+- 37ms (= 3.7ms per time).
