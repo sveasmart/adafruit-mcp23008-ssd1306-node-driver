@@ -1,51 +1,58 @@
-var Step = require("./step")
-
-
-function bm(name, f) {
-  console.log(name)
-  let start = Date.now()
-  f()
-  console.log(`- First time took:  ${Date.now() - start} ms`)
-  start = Date.now()
-  f()
-  console.log(`- Second time took: ${Date.now() - start} ms`)
-  start = Date.now()
-  f()
-  console.log(`- Third time took:  ${Date.now() - start} ms`)
-  
-}
-
-function bmAsync(name, times, f) {
-  console.log(`${name} (async ${times} times in sequence)`)
-  
-  let currentTime = 1
-  let start = Date.now()
-
-  let functions = []
-
-  for (let i = 0; i < times; ++i) {
-    functions.push(function() {
-      f(this)
-    })
-  }
-
-  functions.push(function(err, callback) {
-    console.log("Done!", err, callback)
-  })
-
-  Step(functions)
-}
+const bm = require("./util/benchmarker")
 
 const adafruit = require("../index")
 const display = new adafruit.DisplayDriver()
 
+
+display.init()
+  .then(function() {
+    return display.text("12345678901234567890")
+  })
+  .catch(function(err) {
+    console.log("Error", err)
+  })
+
+
+/*
+console.time("text")
+display.init()
+  .then(function() {
+    return display.text("A")
+  })
+  .then(function() {
+    console.timeEnd("text")
+    return display.text("B")
+  })
+  .then(function() {
+    return display.text("C")
+  })
+  .then(function() {
+    return display.text("D")
+  })
+  .then(function() {
+    return display.text("E")
+  })
+  .catch(function(err) {
+    console.log("Error", err)
+  })
+*/
+
+/*
+bm.promise("display init", function() {
+  return display.init()
+})
+*/
+
+
 /*
 
-bmAsync("writeByte", 10, function(callback) {
+bmAsyncMany("writeByte", 10, function(callback) {
   display._i2c.writeByte(0x3C, 0x00, 0, callback)
 })
 */
 
+/*
+const Step = require("./step")
 let start = Date.now()
 Step(
   function writeByte() {
@@ -83,7 +90,7 @@ Step(
   }
 )
 console.log(`- Took:  ${Date.now() - start} ms`)
-
+*/
 
 /*
 bm("writeByteSync 1000 times", function() {

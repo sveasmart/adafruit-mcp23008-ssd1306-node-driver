@@ -1,5 +1,5 @@
 require
-- First time took:  2517 ms
+- First time took:  2517 ms (because of a bunch of writeByteSync probably)
 - Second time took: 0 ms
 - Third time took:  0 ms
 
@@ -8,7 +8,7 @@ constructor
 - Second time took: 14 ms
 - Third time took:  13 ms
 
-text()
+text()   (1024+ calls to writeByteSync)
 - First time took:  524 ms
 - Second time took: 379 ms
 - Third time took:  401 ms
@@ -18,5 +18,23 @@ writeByteSync 1000 times
 - Second time took: 352 ms
 - Third time took:  311 ms
 
-Execute writeByte 10 times async but in sequence:
+So one writeByteSync takes about 0.4ms
+
+Updating the display means writeByte is called 1024 times,
+so text() should ltake about the time it takes (400ms)
+
+Execute writeByte 10 times non-blocking but in sequence:
 - 37ms (= 3.7ms per time).
+
+========== AFTER UPDATE TO UBLOCKING ===============
+Note that each operation is now unblocking,
+so the time below is just how long it takes for the callback to return.
+In the meantime other node stuff can execute.
+
+display init: 47.803ms
+
+text1: 429.297ms
+text2: 346.685ms
+text3: 345.151ms
+
+qr: 780ms
