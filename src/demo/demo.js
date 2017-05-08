@@ -12,8 +12,10 @@ function demo() {
 
   buttonDriver.watchAllButtons(function(buttonPin) {
     if (buttonPin == 2) {
+      displayDriver.clear()
       displayDriver.setQrCode("http://google.com")
     } else {
+      displayDriver.clear()
       displayDriver.writeText("Clicked #" + buttonPin)
     }
   })
