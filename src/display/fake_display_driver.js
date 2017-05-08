@@ -9,11 +9,11 @@ class FakeDisplayDriver {
   constructor() {
   }
 
-  text(message) {
+  writeText(message) {
     console.log("[FakeDisplay text] " + message)
   }
 
-  qrCode(text) {
+  setQrCode(text) {
     console.log("[FakeDisplay image]")
     qrCodeTerminal.generate(text)
   }

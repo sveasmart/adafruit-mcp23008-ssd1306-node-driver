@@ -35,10 +35,10 @@ const buttonsAddress = 0x20
 const buttonDriver = new ButtonDriver(busNumber, buttonsAddress)
 
 buttonDriver.watchAllButtons(function(buttonPin) {
-  displayDriver.text("Clicked button #" + buttonPin)
+  displayDriver.writeText("Clicked button #" + buttonPin)
 })
 
-displayDriver.text("OK, click some buttons")
+displayDriver.writeText("OK, click some buttons")
 console.log("Check the display...")
 ```
 
@@ -50,17 +50,11 @@ buttonDriver.watchButton(1, function(buttonPin) {
 })
 ```
 
-For access to the full [oled api](https://www.npmjs.com/package/oled-i2c-bus)
-use ```displayDriver.getOled()```.
-For example:
-```javascript
-displayDriver.getOled().invertDisplay(true)
-```
 
 You can also display QR codes:
 
 ```javascript
-displayDriver.qrCode("http://www.google.com")
+displayDriver.setQrCode("http://www.google.com")
 ```
 
 ## Testing
