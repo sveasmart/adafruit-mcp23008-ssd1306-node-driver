@@ -61,15 +61,21 @@ SSD1306_LEFT_HORIZONTAL_SCROLL = 0x27
 SSD1306_VERTICAL_AND_RIGHT_HORIZONTAL_SCROLL = 0x29
 SSD1306_VERTICAL_AND_LEFT_HORIZONTAL_SCROLL = 0x2A
 
+
 /**
- * All methods that take a callback return a promise,
- * so the callback is optional.
+ * This driver lets you write stuff on the display.
+ * It is "thread safe" (or whatever the equilavent node-lingo is).
+ * That means you can write as often as you like, the driver
+ * will buffer in memory and update the display at it's own rate
+ * (takes about half a second to refresh the display).
+ *
+ * A side-effect is that a refresh loop will start.
+ * Use .stop() to stop that.
+ *
+ *
  */
 class DisplayDriver {
   /**
-   *
-   * NOTE: You need to call .init() before doing anything with the object
-   *
    * @param busNumber default 1
    * @param address default 0x3C
    * @param width default 128
@@ -86,6 +92,7 @@ class DisplayDriver {
     this.charactersPerRow = 16
     this.charactersPerColumn = 8
 
+    this.refreshRate = 100
 
     this._spi = null
     this._i2c = null
@@ -93,124 +100,61 @@ class DisplayDriver {
 
     this._buffer = new Array(this.width * this._pages)
     this._buffer.fill(0)
+
     // Setup reset pin.
     var rst = 42
     this._rst = rst
 
     // Save vcc state.
     this._vccstate = SSD1306_SWITCHCAPVCC
-  }
-
-  /**
-   * Returns a promise
-   */
-  init() {
-
-    /*
-    var dc = null
-    var sclk = null
-    var din = null
-    var cs = null
-    var gpio = null
-    var spi = null
-    var i2c_bus = null
-    var i2c_address = SSD1306_I2C_ADDRESS
-    var i2c = null
-    */
-
-
-    //const openI2cBus = Promise.denodeify(this._i2c.open)
-
-    this._i2c = require('i2c-bus').openSync(this.busNumber)
-
-    return this.commands(getInitCommandBytes())
+    this._start()
   }
 
 
   /**
-   * Writes the given command byte on the bus and returns a promise
+   * Stops the display refresh loop
    */
-  _writeByte(command, byte) {
-    return new Promise((fulfill, reject) => {
-      this._i2c.writeByte(this.address, command, byte, function(err) {
-        if (err) {
-          reject()
-        } else {
-          fulfill()
-        }
-      })
-    })
-  }
-
-  /**
-   * Returns a promise.
-   * @param commandByte
-   * @param callback
-   * @returns {*}
-   */
-  command(commandByte) {
-    const command = 0x00   // Co = 0, DC = 0
-    return this._writeByte(command, commandByte)
+  stop() {
+    this.wantsToStop = true
   }
 
 
-
   /**
-   * Executes the given commands in sequence (but non-blocking)
-   * Returns a promise.
+   * Clears the display from all content
    */
-  commands(commandBytes) {
-    const tasks = []
-
-    commandBytes.forEach((commandByte) => {
-      tasks.push(() => {
-        return this.command(commandByte)
-      })
-    })
-
-    return util.runTasksSerially(tasks)
+  clear() {
+    this._buffer.fill(0)
+    this.dirty = true
   }
 
   /**
-   * Updates the display, by writing the display buffer to the physical display.
-   * Returns a promise.
+   * Displays a QR code for the given text on the display (clearing away everything else).
+   * Default is black on white, but you can set whiteOnBlack=true to reverse that.
+   * @param text the content of the QR code
+   * @param whiteOnBlack if true, draws white on black instead of black on white
    */
-  display() {
-    const resetDisplayBytes = []
+  setQrCode(text, whiteOnBlack) {
+    var pngStream = qr.image(text, {
+      type: 'png',
+      size: '64'
+    });
 
-    //Write display buffer to physical display.
-    resetDisplayBytes.push(SSD1306_COLUMNADDR)
-    resetDisplayBytes.push(0)              // Column start address. (0 = reset)
-    resetDisplayBytes.push(this.width-1)   // Column end address.
-    resetDisplayBytes.push(SSD1306_PAGEADDR)
-    resetDisplayBytes.push(0)              //Page start address. (0 = reset)
-    resetDisplayBytes.push(this._pages-1)  // Page end address.
+    return streamToArray(pngStream)
+      .then( (parts) => {
+        const buffers = parts.map(part => Buffer.from(part));
+        const buffer = Buffer.concat(buffers);
 
-    return this.commands(resetDisplayBytes)
-      .then(() => {
-        //OK, we've resetted the display. Now let's write all the bytes. In parallell!
-        const writeBytePromises = []
-
-        const command = 0x40
-        //Loop through all 1024 bytes in the buffer and
-        //trigger writeByte
-        for (var j = 0; j < this._buffer.length; ++j) {
-          writeBytePromises.push(
-            this._writeByte(command, this._buffer[j])
-          )
-        }
-
-        //Return a promise that resolves when all the writeByte promises have resolved.
-        return Promise.all(writeBytePromises)
+        return cropImage(buffer, whiteOnBlack)
+      }).then( (bitmap) => {
+        this.setImage(bitmap);
       })
   }
 
   /**
-   * Clears the display and writes the given image.
+   * Displays the given image on the display (clearing away everything else).
    * The image pixels should be in 1 bit mode and equal to the display size (8192 values).
-   * Returns a promise
    */
-  image(pix) {
+  setImage(pix) {
     const expectedLength = this.width * this.height
     console.assert(pix.length == expectedLength, `Hey, image(...) expects an array of length ${expectedLength}. This array has length ${pix.length}.`)
 
@@ -239,85 +183,55 @@ class DisplayDriver {
         index = index + 1
       }
     }
-    return this.display()
+    this.dirty = true
   }
 
   /**
-   * Clears the screen and writes the given lines of text.
+   * Clears and writes the given lines of text on the display,
    * If any line is too long it will be truncated.
    * If there are too many lines they will be truncated too.
+   * By default the display is 16 chars wide and 8 rows high.
    */
-  texts(lines) {
+  setTexts(lines) {
     this._buffer.fill(0)
 
     for (var lineNumber = 0; lineNumber < lines.length; ++lineNumber) {
       if (lineNumber >= this.charactersPerColumn) {
         break
       }
-      this.drawString(lines[lineNumber], 0, lineNumber, false)
+      this.writeText(lines[lineNumber], 0, lineNumber, false)
     }
-    return this.display()
+    this.dirty = true
   }
 
+
+
   /**
-   * Clears the display, writes the given text and updates the display.
+   * Writes the given text at the given position,
+   * without clearing the display.
    * If the text goes beyond the end of a row, it will be wrapped (if wrap == true)
    * or truncated (if wrap == false).
    * If the text runs flows beyound than the bottom row, it will be truncated.
-   * 
-   * Returns a promise.
    * @param string the test to write.
    * @param column optional, default is 0. Must be in the range 0-15.
    * @param row optional, default is 0. Must be in the range 0-8.
    * @param wrap default true. If true, text longer than the row is wrapped. Otherwise it is truncated.
    */
-  text(string, column, row, wrap) {
-    this._buffer.fill(0)
+  writeText(string, column, row, wrap) {
     if (!column) {
       column = 0
     }
     if (!row) {
       row = 0
     }
-
-    this.drawString(string, column, row, wrap)
-    return this.display()
-    /*
-    //var fontFile = path.join(__dirname, "PixelOperator.ttf")
-    Jimp.loadFont( Jimp.FONT_SANS_16_WHITE).then( (font) => { // load font from .fnt file
-      var image = new Jimp(128, 64, 255);
-      console.log("Printing " + message)
-      image = image.print(font, 10, 10, message);        // print a message on an image
-      image.write("text.png")
-      this.image(getJimpPixels(image))
-      this.display()
-    }).catch(function (err) {
-      console.error(err);
-    });
-    */
-  }
-
-  /**
-   * Same as text(...), but doesn't clear or redraw the display.
-   * Doesn't return anything.
-   */
-  drawString(string, column, row, wrap) {
-    string = String(string)
-
     if (wrap == undefined || wrap == null) {
       wrap = true
     }
+    string = String(string)
 
-    if (!column) {
-      column = 0
-    }
-    if (!row) {
-      row = 0
-    }
 
     assertInt("column", column, 0, this.charactersPerRow - 1)
     assertInt("row", row, 0, this.charactersPerColumn - 1)
-
 
     for (var i = 0; i < string.length; ++i) {
       if (column + i >= this.charactersPerRow) {
@@ -336,28 +250,55 @@ class DisplayDriver {
         break
       }
 
-      this.drawChar(string[i], column + i, row)
+      this._drawChar(string[i], column + i, row)
     }
   }
 
-  drawChar(char, charX, charY) {
+
+
+
+
+  /**
+   * Starts background task of initializing this screen
+   * and automatically updating it whenever it is dirty.
+   */
+  _start() {
+    this._init().then(() => {
+      this._updateDisplayAndRepeat()
+    }).catch((err) => {
+      console.log("Error in DisplayDriver refresh loop. The display will stop working now!", err)
+    })
+  }
+
+
+  /**
+   * Initialized the display. Must be called once before using the display.
+   * Returns a promise.
+   */
+  _init() {
+    this._i2c = require('i2c-bus').openSync(this.busNumber)
+    return this._writeCommands(getInitCommandBytes())
+  }
+
+
+  _drawChar(char, charX, charY) {
     console.assert(char, "No char was given")
     assertInt("charX", charX, 0, this.charactersPerRow - 1)
     assertInt("charY", charY, 0, this.charactersPerColumn - 1)
 
 
-    const buf = this.findCharBuf(this.font, char)
+    const buf = this._findCharBuf(this.font, char)
     for (var i = 0; i < buf.length; ++i) {
       var x = charX * 8
       var y = charY
       var bufferPos = x + (y * 128)
       this._buffer[bufferPos + i] = buf[i]
     }
+    this.dirty = true
   }
 
 
-// find where the character exists within the font object
-  findCharBuf(font, c) {
+  _findCharBuf(font, c) {
     // use the lookup array as a ref to find where the current char bytes start
     var cBufPos = font.lookup.indexOf(c) * font.width;
     // slice just the current char's bytes out of the fontData array and return
@@ -365,52 +306,117 @@ class DisplayDriver {
     return cBuf;
   }
 
-  textRows(rows) {
-    Jimp.loadFont( Jimp.FONT_SANS_16_WHITE).then( (font) => { // load font from .fnt file
-      var image = new Jimp(128, 64, 255);
-
-
-      const rowHeight = 18
-      for (var rowNumber = 0; rowNumber < rows.length; ++rowNumber) {
-        var rowText = rows[rowNumber]
-        image = image.print(font, 0, rowNumber * rowHeight, rowText);        // print a message on an image
+  /**
+   * Keeps calling updateDisplayOrWait() until
+   * stop() is called.
+   */
+  _updateDisplayAndRepeat() {
+    this._updateDisplayOrWait().then(() => {
+      if (this.wantsToStop == true) {
+        return
       }
-      image.write("text.png")
-      return this.image(getJimpPixels(image))
-    }).catch(function (err) {
-      console.error(err);
-    });
-
-  }
-
-  clear() {
-    this._buffer.fill(0)
-    this.display()
+      setImmediate(() => {
+        this._updateDisplayAndRepeat()
+      })
+    }).catch((err) => {
+      console.log("Error in _updateDisplayAndRepeat. The display will stop working.", err)
+    })
   }
 
   /**
-   * Clears the display and writes the given QR code.
-   * Default is black on white.
-   * Returns a promise.
-   * @param text the content of the QR code
-   * @param whiteOnBlack if true, draws white on black instead of black on white
+   * If the buffer is dirty, redraws the display and returns a promise for that.
+   * If the buffer isn't dirty, waits 100ms and returns a promise for that.
    */
-  qrCode(text, whiteOnBlack) {
-    var pngStream = qr.image(text, {
-      type: 'png',
-      size: '64'
-    });
+  _updateDisplayOrWait() {
+    if (this.dirty) {
+      return this._updateDisplay()
+    } else {
+      return new Promise((fulfill, reject) => {
+        setTimeout(() => {
+          fulfill()
+        }, this.refreshRate)
+      })
+    }
+  }
 
-    return streamToArray(pngStream)
-      .then( (parts) => {
-        const buffers = parts.map(part => Buffer.from(part));
-        const buffer = Buffer.concat(buffers);
 
-        return cropImage(buffer, whiteOnBlack)
-      }).then( (bitmap) => {
-        return this.image(bitmap);
+  /**
+   * Writes the given byte on the bus and returns a promise.
+   */
+  _writeByte(command, byte) {
+    return new Promise((fulfill, reject) => {
+      this._i2c.writeByte(this.address, command, byte, function(err) {
+        if (err) {
+          reject()
+        } else {
+          fulfill()
+        }
+      })
+    })
+  }
+
+  /**
+   * Writes the given commmand byte on the bus and returns a promise.
+   */
+  _writeCommand(commandByte) {
+    const command = 0x00   // Co = 0, DC = 0
+    return this._writeByte(command, commandByte)
+  }
+
+
+
+  /**
+   * Writes the given commands to the bus, one after another.
+   * Returns a promise that resolves when all commands are done.
+   */
+  _writeCommands(commandBytes) {
+    const tasks = []
+
+    commandBytes.forEach((commandByte) => {
+      tasks.push(() => {
+        return this._writeCommand(commandByte)
+      })
+    })
+
+    return util.runTasksSerially(tasks)
+  }
+
+  /**
+   * Updates the display, by writing the whole display buffer to the physical display.
+   * Returns a promise. Takes about half a second to resolve.
+   * You should NOT call _updateDisplay again until that promise resolves,
+   * or you will get a messed up display.
+   */
+  _updateDisplay() {
+    this.dirty = false
+
+    const resetDisplayBytes = [
+      SSD1306_COLUMNADDR,
+      0, // Column start address. (0 = reset)
+      this.width-1, // Column end address.
+      SSD1306_PAGEADDR,
+      0,     //Page start address. (0 = reset)
+      this._pages-1  // Page end address.
+    ]
+
+    return this._writeCommands(resetDisplayBytes)
+      .then(() => {
+        //OK, we've resetted the display. Now let's write all the bytes. In parallell!
+        const writeBytePromises = []
+
+        const command = 0x40
+        //Loop through all 1024 bytes in the buffer and
+        //trigger writeByte
+        for (var j = 0; j < this._buffer.length; ++j) {
+          writeBytePromises.push(
+            this._writeByte(command, this._buffer[j])
+          )
+        }
+        //Return a promise that resolves when all the writeByte promises have resolved.
+        return Promise.all(writeBytePromises)
       })
   }
+
 }
 
 function getPixelValue(pixelArray, x, y) {

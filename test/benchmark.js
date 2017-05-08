@@ -4,9 +4,9 @@ const adafruit = require("../index")
 const display = new adafruit.DisplayDriver()
 
 
-display.init()
+display._init()
   .then(function() {
-    return display.text("12345678901234567890")
+    return display.writeText("12345678901234567890")
   })
   .catch(function(err) {
     console.log("Error", err)

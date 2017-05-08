@@ -8,7 +8,7 @@ constructor
 - Second time took: 14 ms
 - Third time took:  13 ms
 
-text()   (1024+ calls to writeByteSync)
+writeText()   (1024+ calls to writeByteSync)
 - First time took:  524 ms
 - Second time took: 379 ms
 - Third time took:  401 ms
@@ -21,7 +21,7 @@ writeByteSync 1000 times
 So one writeByteSync takes about 0.4ms
 
 Updating the display means writeByte is called 1024 times,
-so text() should ltake about the time it takes (400ms)
+so writeText() should ltake about the time it takes (400ms)
 
 Execute writeByte 10 times non-blocking but in sequence:
 - 37ms (= 3.7ms per time).
@@ -31,7 +31,7 @@ Note that each operation is now unblocking,
 so the time below is just how long it takes for the callback to return.
 In the meantime other node stuff can execute.
 
-display init: 47.803ms
+display _init: 47.803ms
 
 text1: 429.297ms
 text2: 346.685ms

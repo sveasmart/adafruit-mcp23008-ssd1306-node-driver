@@ -1,16 +1,9 @@
 const adafruit = require("../index")
 const display = new adafruit.DisplayDriver()
 
+display.setQrCode("http://www.kniberg.com", false)
 
-console.time("qr")
-display.init()
-  .then(function() {
-    return display.qrCode("http://www.kniberg.com", false)
-  })
-  .then(function() {
-    console.timeEnd("qr")
-  })
-  .catch(function(err) {
-    console.log("Error", err)
-  })
+setTimeout(function() {
+  display.setQrCode("http://www.kniberg.com", true)
+}, 3000)
 

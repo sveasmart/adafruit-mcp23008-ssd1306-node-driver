@@ -12,13 +12,13 @@ function demo() {
 
   buttonDriver.watchAllButtons(function(buttonPin) {
     if (buttonPin == 2) {
-      displayDriver.qrCode("http://google.com")
+      displayDriver.setQrCode("http://google.com")
     } else {
-      displayDriver.text("Clicked #" + buttonPin)
+      displayDriver.writeText("Clicked #" + buttonPin)
     }
   })
 
-  displayDriver.text("Click me!")
+  displayDriver.writeText("Click me!")
   console.log("Check the display...")
 }
 
