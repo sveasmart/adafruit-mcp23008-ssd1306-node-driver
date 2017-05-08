@@ -57,6 +57,13 @@ You can also display QR codes:
 displayDriver.setQrCode("http://www.google.com")
 ```
 
+Note that the display driver runs a background loop to keep the display refreshed.
+So your process won't exit until you call:
+
+```javascript
+displayDriver.stop()
+```
+
 ## Testing
 
 If you are in a development environment with no access to the actual screen,
