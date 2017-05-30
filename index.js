@@ -20,7 +20,7 @@ exports.hasDriver = function() {
     console.log("/dev/i2c-1 doesn't exist, so I'll assume i2c isn't available")
     return false
   }
-
+  
   return true
 }
 

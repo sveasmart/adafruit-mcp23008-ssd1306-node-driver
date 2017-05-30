@@ -205,6 +205,14 @@ class DisplayDriver {
   }
 
 
+  /**
+   * Clears the given row, without touching any other rows
+   * @param row should be in the range 0-7
+   */
+  clearRow(row) {
+    console.assert(row != null && row != undefined, "a row number must be given!")
+    writeText("                ", 0, row, false)
+  }
 
   /**
    * Writes the given text at the given position,
@@ -214,7 +222,7 @@ class DisplayDriver {
    * If the text runs flows beyound than the bottom row, it will be truncated.
    * @param string the test to write.
    * @param column optional, default is 0. Must be in the range 0-15.
-   * @param row optional, default is 0. Must be in the range 0-8.
+   * @param row optional, default is 0. Must be in the range 0-7.
    * @param wrap default true. If true, text longer than the row is wrapped. Otherwise it is truncated.
    */
   writeText(string, column, row, wrap) {
