@@ -14,7 +14,7 @@ That is, we can detect button presses and write stuff to the display.
 
 Try this to run a quick demo. It echos button presses to the display.
 ```javascript
-const adafruit = require("adafruit-mcp23008-ssd1306-node-driver ")
+const adafruit = require("adafruit-mcp23008-ssd1306-node-driver")
 adafruit.demo()
 ```
 
@@ -22,7 +22,7 @@ adafruit.demo()
 Here's how to do it yourself:
 
 ```javascript
-const adafruit = require("adafruit-mcp23008-ssd1306-node-driver ")
+const adafruit = require("adafruit-mcp23008-ssd1306-node-driver")
 const ButtonDriver = adafruit.ButtonDriver
 const DisplayDriver = adafruit.DisplayDriver
 
@@ -70,7 +70,7 @@ If you are in a development environment with no access to the actual screen,
 you can use the fakes.
 
 ```javascript
-const adafruit = require("adafruit-mcp23008-ssd1306-node-driver ")
+const adafruit = require("adafruit-mcp23008-ssd1306-node-driver")
 
 console.log("Has driver: ", adafruit.hasDriver())
 const fakeDisplayDriver = new adafruit.FakeDisplayDriver()
