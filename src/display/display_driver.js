@@ -127,6 +127,18 @@ class DisplayDriver {
     this.dirty = true
   }
 
+
+  /**
+   * Clears the given row, without touching any other rows
+   * @param row should be in the range 0-7
+   */
+  clearRow(row) {
+    console.assert(row != null && row != undefined, "a row number must be given!")
+    //write 16 blank spaces on that row
+    this.writeText("                ", 0, row, false)
+  }
+  
+
   /**
    * Displays a QR code for the given text on the display (clearing away everything else).
    * Default is black on white, but you can set whiteOnBlack=true to reverse that.
@@ -204,15 +216,6 @@ class DisplayDriver {
     this.dirty = true
   }
 
-
-  /**
-   * Clears the given row, without touching any other rows
-   * @param row should be in the range 0-7
-   */
-  clearRow(row) {
-    console.assert(row != null && row != undefined, "a row number must be given!")
-    writeText("                ", 0, row, false)
-  }
 
   /**
    * Writes the given text at the given position,
