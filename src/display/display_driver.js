@@ -156,8 +156,10 @@ class DisplayDriver {
 
 
   /**
-   * Displays a QR code for the given text on the display (clearing away everything else).
+   * Displays a QR code for the given text on the left side of the display.
    * Default is black on white, but you can set whiteOnBlack=true to reverse that.
+   * Anything on the left half of the display will be replaced.
+   * Anything on the right half of the display is left alone.
    * @param text the content of the QR code
    * @param whiteOnBlack if true, draws white on black instead of black on white
    * @param tab which tab (optional) - otherwise uses the current tab
@@ -175,16 +177,17 @@ class DisplayDriver {
 
         return cropImage(buffer, whiteOnBlack)
       }).then( (bitmap) => {
-        this.setImage(bitmap, tab);
+        this.setImage(bitmap, 64, tab);
       })
   }
 
   /**
    * Displays the given image on the display (clearing away everything else).
    * The image pixels should be in 1 bit mode and equal to the display size (8192 values).
+   * @param maxX (optional) how many pixels wide (at most) the image will be. If wider it will be cropped. Default is full width (128 pixels)
    * @param tab which tab (optional) - otherwise uses the current tab
    */
-  setImage(pix, tab = DEFAULT_TAB) {
+  setImage(pix, maxX = 128, tab = DEFAULT_TAB) {
     const expectedLength = this.width * this.height
     console.assert(pix.length == expectedLength, `Hey, image(...) expects an array of length ${expectedLength}. This array has length ${pix.length}.`)
 
@@ -194,22 +197,24 @@ class DisplayDriver {
 
       // Iterate through all x axis columns.
       for (var x = 0; x < 128; ++x) {
+        if (x < maxX) {
+          // Set the bits for the column of pixels at the current position.
+          var bits = 0
+          for (var bit = 0; bit < 8; ++bit) {
+            bits = bits << 1
 
-        // Set the bits for the column of pixels at the current position.
-        var bits = 0
-        for (var bit = 0; bit < 8; ++bit) {
-          bits = bits << 1
-
-          var val
-          if (getPixelValue(pix, x, (page * 8) + 7 - bit) == 0) {
-            val = 0
-          } else {
-            val = 1
+            var val
+            if (getPixelValue(pix, x, (page * 8) + 7 - bit) == 0) {
+              val = 0
+            } else {
+              val = 1
+            }
+            bits = bits | val
           }
-          bits = bits | val
+          // Update buffer byte and increment to next byte.
+          this._getBuffer(tab)[index] = bits
         }
-        // Update buffer byte and increment to next byte.
-        this._getBuffer(tab)[index] = bits
+
         index = index + 1
       }
     }
