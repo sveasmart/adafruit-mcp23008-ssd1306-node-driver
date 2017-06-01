@@ -64,6 +64,23 @@ So your process won't exit until you call:
 displayDriver.stop()
 ```
 
+## Using tabs
+This driver has a "tab" mechanism, using the metaphor of tabs in a web browser.
+Send the tab name as the last parameter of any method. If you don't specify a tab, it will use "default".
+Switch the current using displayDriver.showTab(...).
+
+Example:
+
+```javascript
+displayDriver.writeText("First tab", 0, 0, false, "tab1")
+displayDriver.writeText("Second tab", 0, 0, false, "tab2")
+displayDriver.showTab("tab2")
+```
+
+If you write stuff on a tab that isn't the current tab, then nothing changes on the display until you
+show that tab. Just like with real tabs.
+
+
 ## Testing
 
 If you are in a development environment with no access to the actual screen,

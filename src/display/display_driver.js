@@ -61,6 +61,7 @@ SSD1306_LEFT_HORIZONTAL_SCROLL = 0x27
 SSD1306_VERTICAL_AND_RIGHT_HORIZONTAL_SCROLL = 0x29
 SSD1306_VERTICAL_AND_LEFT_HORIZONTAL_SCROLL = 0x2A
 
+const DEFAULT_TAB = "default"
 
 /**
  * This driver lets you write stuff on the display.
@@ -98,8 +99,9 @@ class DisplayDriver {
     this._i2c = null
     this._pages = Math.floor(this.height / 8)
 
-    this._buffer = new Array(this.width * this._pages)
-    this._buffer.fill(0)
+    this._buffers = {}
+    this._buffers[DEFAULT_TAB] = this._getBuffer(DEFAULT_TAB)
+    this.currentTab = DEFAULT_TAB
 
     // Setup reset pin.
     var rst = 42
@@ -111,6 +113,13 @@ class DisplayDriver {
   }
 
 
+  showTab(tab) {
+    if (tab != this.currentTab) {
+      this.currentTab = tab
+      this.dirty = true
+    }
+  }
+
   /**
    * Stops the display refresh loop
    */
@@ -119,33 +128,41 @@ class DisplayDriver {
   }
 
 
-  /**
-   * Clears the display from all content
-   */
-  clear() {
-    this._buffer.fill(0)
+  clearAllTabs() {
+    this._buffers = {}
+    this._buffers[DEFAULT_TAB] = this._getBuffer(DEFAULT_TAB)
     this.dirty = true
   }
 
+  /**
+   * Clears the display from all content
+   * @param tab which tab (optional) - otherwise uses the current tab
+   */
+  clear(tab = DEFAULT_TAB) {
+    this._getBuffer(tab).fill(0)
+    this._setDirtyIfCurrentTab(tab)
+  }
 
   /**
    * Clears the given row, without touching any other rows
    * @param row should be in the range 0-7
+   * @param tab which tab (optional) - otherwise uses the current tab
    */
-  clearRow(row) {
+  clearRow(row, tab = DEFAULT_TAB) {
     console.assert(row != null && row != undefined, "a row number must be given!")
     //write 16 blank spaces on that row
     this.writeText("                ", 0, row, false)
   }
-  
+
 
   /**
    * Displays a QR code for the given text on the display (clearing away everything else).
    * Default is black on white, but you can set whiteOnBlack=true to reverse that.
    * @param text the content of the QR code
    * @param whiteOnBlack if true, draws white on black instead of black on white
+   * @param tab which tab (optional) - otherwise uses the current tab
    */
-  setQrCode(text, whiteOnBlack) {
+  setQrCode(text, whiteOnBlack, tab = DEFAULT_TAB) {
     var pngStream = qr.image(text, {
       type: 'png',
       size: '64'
@@ -158,15 +175,16 @@ class DisplayDriver {
 
         return cropImage(buffer, whiteOnBlack)
       }).then( (bitmap) => {
-        this.setImage(bitmap);
+        this.setImage(bitmap, tab);
       })
   }
 
   /**
    * Displays the given image on the display (clearing away everything else).
    * The image pixels should be in 1 bit mode and equal to the display size (8192 values).
+   * @param tab which tab (optional) - otherwise uses the current tab
    */
-  setImage(pix) {
+  setImage(pix, tab = DEFAULT_TAB) {
     const expectedLength = this.width * this.height
     console.assert(pix.length == expectedLength, `Hey, image(...) expects an array of length ${expectedLength}. This array has length ${pix.length}.`)
 
@@ -191,11 +209,11 @@ class DisplayDriver {
           bits = bits | val
         }
         // Update buffer byte and increment to next byte.
-        this._buffer[index] = bits
+        this._getBuffer(tab)[index] = bits
         index = index + 1
       }
     }
-    this.dirty = true
+    this._setDirtyIfCurrentTab(tab)
   }
 
   /**
@@ -203,9 +221,11 @@ class DisplayDriver {
    * If any line is too long it will be truncated.
    * If there are too many lines they will be truncated too.
    * By default the display is 16 chars wide and 8 rows high.
+   * @param tab which tab (optional) - otherwise uses the current tab
+   *
    */
-  setTexts(lines) {
-    this._buffer.fill(0)
+  setTexts(lines, tab = DEFAULT_TAB) {
+    this._getBuffer(tab).fill(0)
 
     for (var lineNumber = 0; lineNumber < lines.length; ++lineNumber) {
       if (lineNumber >= this.charactersPerColumn) {
@@ -213,7 +233,7 @@ class DisplayDriver {
       }
       this.writeText(lines[lineNumber], 0, lineNumber, false)
     }
-    this.dirty = true
+    this._setDirtyIfCurrentTab(tab)
   }
 
 
@@ -227,8 +247,9 @@ class DisplayDriver {
    * @param column optional, default is 0. Must be in the range 0-15.
    * @param row optional, default is 0. Must be in the range 0-7.
    * @param wrap default true. If true, text longer than the row is wrapped. Otherwise it is truncated.
+   * @param tab which tab (optional) - otherwise tab the current page
    */
-  writeText(string, column, row, wrap) {
+  writeText(string, column, row, wrap, tab = DEFAULT_TAB) {
     if (!column) {
       column = 0
     }
@@ -261,12 +282,26 @@ class DisplayDriver {
         break
       }
 
-      this._drawChar(string[i], column + i, row)
+      this._drawChar(string[i], column + i, row, tab)
     }
   }
 
-
-
+  /**
+   * Gets the buffer for the given tab, if it exists.
+   * If it doesn't exist, creates it now and remembers if for the future.
+   */
+  _getBuffer(tab) {
+    if (!tab) {
+      tab = DEFAULT_TAB
+    }
+    let buffer = this._buffers[tab]
+    if (!buffer) {
+      buffer = new Array(this.width * this._pages)
+      buffer.fill(0)
+      this._buffers[tab] = buffer
+    }
+    return buffer
+  }
 
 
   /**
@@ -292,7 +327,7 @@ class DisplayDriver {
   }
 
 
-  _drawChar(char, charX, charY) {
+  _drawChar(char, charX, charY, tab) {
     console.assert(char, "No char was given")
     assertInt("charX", charX, 0, this.charactersPerRow - 1)
     assertInt("charY", charY, 0, this.charactersPerColumn - 1)
@@ -303,9 +338,9 @@ class DisplayDriver {
       var x = charX * 8
       var y = charY
       var bufferPos = x + (y * 128)
-      this._buffer[bufferPos + i] = buf[i]
+      this._getBuffer(tab)[bufferPos + i] = buf[i]
     }
-    this.dirty = true
+    this._setDirtyIfCurrentTab(tab)
   }
 
 
@@ -350,6 +385,12 @@ class DisplayDriver {
     }
   }
 
+
+  _setDirtyIfCurrentTab(tab = DEFAULT_TAB) {
+    if (tab == this.currentTab) {
+      this.dirty = true
+    }
+  }
 
   /**
    * Writes the given byte on the bus and returns a promise.
@@ -418,9 +459,10 @@ class DisplayDriver {
         const command = 0x40
         //Loop through all 1024 bytes in the buffer and
         //trigger writeByte
-        for (var j = 0; j < this._buffer.length; ++j) {
+        const buffer = this._buffers[this.currentTab]
+        for (var j = 0; j < buffer.length; ++j) {
           writeBytePromises.push(
-            this._writeByte(command, this._buffer[j])
+            this._writeByte(command, buffer[j])
           )
         }
         //Return a promise that resolves when all the writeByte promises have resolved.
