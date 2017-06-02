@@ -112,8 +112,17 @@ class DisplayDriver {
     this._start()
   }
 
+  /**
+   * Returns the name of the current tab being shown.
+   * Default is "default".
+   */
+  getTab() {
+    return this.currentTab
+  }
 
   showTab(tab) {
+    console.assert(tab, "tab must be given")
+
     if (tab != this.currentTab) {
       this.currentTab = tab
       this.dirty = true

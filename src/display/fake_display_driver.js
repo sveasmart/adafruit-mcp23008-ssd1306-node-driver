@@ -6,10 +6,17 @@ const qrCodeTerminal = require('qrcode-terminal')
  * Useful for testing purposes when you don't have the real hardware.
  */
 class FakeDisplayDriver {
+
   constructor() {
+    this.currentTab = "default"
   }
 
-  showTab() {
+  getTab() {
+    return this.currentTab
+  }
+
+  showTab(tab) {
+    this.currentTab = tab
     log("showTab", arguments)
   }
 
