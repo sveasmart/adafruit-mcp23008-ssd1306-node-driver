@@ -9,40 +9,49 @@ class FakeDisplayDriver {
   constructor() {
   }
 
+  showTab() {
+    log("showTab", arguments)
+  }
+
   stop() {
-    console.log("[FakeDisplay stop]")
+    log("stop", arguments)
+  }
+
+  clearAllTabs() {
+    log("clearAllTabs", arguments)
   }
 
   clear() {
-    console.log("[FakeDisplay clear]")
+    log("clear", arguments)
   }
 
-  clearRow(row) {
-    console.log("[FakeDisplay clearRow " + row + "]")
+  clearRow() {
+    log("clearRow", arguments)
   }
 
-
-  writeText(message) {
-    console.log("[FakeDisplay writeText] " + message)
-  }
-
-  setQrCode(text, whiteOnBlack) {
-    console.log("[FakeDisplay setQrCode]")
+  setQrCode(text) {
+    log("setQrCode", arguments)
     qrCodeTerminal.generate(text)
   }
 
-  setImage(pix) {
-    console.log("[FakeDisplay setImage]")
+  setImage() {
+    log("setImage", arguments)
   }
 
-  setTexts(lines) {
-    console.log("[FakeDisplay setTexts]", lines.join("\n"))
+  setTexts(lines, tab) {
+    console.log("[FakeDisplay] setTexts" +
+      "([" + lines.join(",") + "], " + tab + ")")
   }
 
-  writeText(string, column, row, wrap) {
-    console.log("[FakeDisplay writeText col=" + column + ", row=" + row + "]", string)
+  writeText() {
+    log("writeText", arguments)
   }
 
+}
+
+function log(methodName, args) {
+  argumentsArray = [].slice.apply(args)
+  console.log("[FakeDisplay] " + methodName + "(" + argumentsArray.join(", ") + ")")
 }
 
 module.exports = FakeDisplayDriver
