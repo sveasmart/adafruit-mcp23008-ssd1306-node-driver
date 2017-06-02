@@ -474,10 +474,12 @@ class DisplayDriver {
         //Loop through all 1024 bytes in the buffer and
         //trigger writeByte
         const buffer = this._buffers[this.currentTab]
-        for (var j = 0; j < buffer.length; ++j) {
-          writeBytePromises.push(
-            this._writeByte(command, buffer[j])
-          )
+        if (buffer) {
+          for (var j = 0; j < buffer.length; ++j) {
+            writeBytePromises.push(
+              this._writeByte(command, buffer[j])
+            )
+          }
         }
         //Return a promise that resolves when all the writeByte promises have resolved.
         return Promise.all(writeBytePromises)
