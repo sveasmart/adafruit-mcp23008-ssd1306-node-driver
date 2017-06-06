@@ -160,7 +160,7 @@ class DisplayDriver {
   clearRow(row, tab = DEFAULT_TAB) {
     console.assert(row != null && row != undefined, "a row number must be given!")
     //write 16 blank spaces on that row
-    this.writeText("                ", 0, row, false)
+    this.writeText("                ", 0, row, false, tab)
   }
 
 
@@ -245,7 +245,7 @@ class DisplayDriver {
       if (lineNumber >= this.charactersPerColumn) {
         break
       }
-      this.writeText(lines[lineNumber], 0, lineNumber, false)
+      this.writeText(lines[lineNumber], 0, lineNumber, false, tab)
     }
     this._setDirtyIfCurrentTab(tab)
   }
