@@ -413,7 +413,7 @@ class DisplayDriver {
     return new Promise((fulfill, reject) => {
       this._i2c.writeByte(this.address, command, byte, function(err) {
         if (err) {
-          reject()
+          reject(err)
         } else {
           fulfill()
         }

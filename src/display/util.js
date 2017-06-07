@@ -1,12 +1,26 @@
-
 /**
- * Executes the given tasks in serial. Each task should be a function that returns a promise.
- * The runTasksSerially function in turn returns a promise that is fulfilled
- * when all tasks are done.
+ * Executes the given array of tasks one at a time.
+ * If any one task fails, the rest won't be executed.
+ * Each task in the array is a function that returns a promise.
+ * This function in returns a promise that resolves when the last task
+ * has been successfully executed, or throws error if any one tasks throws an error.
  */
 exports.runTasksSerially = function(tasks) {
-  var resolve = Promise.resolve();
-  return tasks.reduce(function(accumulator, fn) {
-    return accumulator = accumulator.then(fn);
-  }, resolve);
+
+  // Create a new empty promise (don't do that with real people ;)
+  var sequence = Promise.resolve();
+
+  // Loop over each task, and add on a promise to the
+  // end of the 'sequence' promise.
+  tasks.forEach(function(task) {
+
+    // Chain one computation onto the sequence
+    sequence = sequence.then(function() {
+      return task();
+    })
+
+  })
+
+  // This will resolve after the entire chain is resolved
+  return sequence;
 }
