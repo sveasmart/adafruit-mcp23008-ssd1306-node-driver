@@ -1,6 +1,7 @@
 const qr = require('node-qr-image')
 const streamToArray = require('stream-to-array')
 const Jimp = require('jimp')
+const removeAccents = require("remove-accents")
 
 const fs = require("fs")
 const async = require("async")
@@ -286,6 +287,8 @@ class DisplayDriver {
     }
     string = String(string)
 
+    //Replace accented chars (like Å) with standard chars (like A)
+    string = removeAccents(string) //TODO implement support for accented chars
 
     assertInt("column", column, 0, this.charactersPerRow - 1)
     assertInt("row", row, 0, this.charactersPerColumn - 1)
@@ -356,7 +359,6 @@ class DisplayDriver {
     console.assert(char, "No char was given")
     assertInt("charX", charX, 0, this.charactersPerRow - 1)
     assertInt("charY", charY, 0, this.charactersPerColumn - 1)
-
 
     const buf = this._findCharBuf(this.font, char)
     for (var i = 0; i < buf.length; ++i) {
