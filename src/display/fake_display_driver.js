@@ -46,9 +46,13 @@ class FakeDisplayDriver {
   }
 
   setTexts(lines, tab) {
-    console.log("[FakeDisplay] setTexts" +
-      "([" + lines.join(",") + "], " + tab + ")")
+    console.log("[FakeDisplay] setTexts" + "([" + lines.join(",") + "], " + tab + ")")
   }
+
+  setRowText(string, row, wrap, tab = DEFAULT_TAB) {
+    log("setRowText", arguments)
+  }
+
 
   writeText() {
     log("writeText", arguments)
