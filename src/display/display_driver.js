@@ -250,6 +250,17 @@ class DisplayDriver {
     this._setDirtyIfCurrentTab(tab)
   }
 
+  /**
+   * Clears the given row and writes the given text.
+   * @param string the text to write.
+   * @param row optional, default is 0. Must be in the range 0-7.
+   * @param wrap default true. If true, text longer than the row is wrapped. Otherwise it is truncated.
+   * @param tab which tab (optional) - otherwise tab the current page
+   */
+  setRowText(string, row, wrap, tab = DEFAULT_TAB) {
+    this.clearRow(row, tab)
+    this.writeText(string, 0, row, wrap, tab)
+  }
 
   /**
    * Writes the given text at the given position,
@@ -257,7 +268,7 @@ class DisplayDriver {
    * If the text goes beyond the end of a row, it will be wrapped (if wrap == true)
    * or truncated (if wrap == false).
    * If the text runs flows beyound than the bottom row, it will be truncated.
-   * @param string the test to write.
+   * @param string the text to write.
    * @param column optional, default is 0. Must be in the range 0-15.
    * @param row optional, default is 0. Must be in the range 0-7.
    * @param wrap default true. If true, text longer than the row is wrapped. Otherwise it is truncated.
