@@ -17,16 +17,16 @@
   },
   "homepage": "https://github.com/sveasmart/mcp23008-node-driver#readme",
   "dependencies": {
-    "async": "2.4.0",
-    "i2c-bus": "1.2.1",
-    "jimp": "0.2.27",
+    "async": "2.6.1",
+    "i2c-bus": "4.0.2",
+    "jimp": "0.5.3",
     "node-qr-image": "0.0.1",
-    "oled-font-5x7": "1.0.0",
+    "oled-font-5x7": "1.0.3",
     "pngparse": "2.0.1",
-    "promise-sequence": "^0.2.3",
-    "qrcode-terminal": "0.11.0",
+    "promise-sequence": "^0.3.1",
+    "qrcode-terminal": "0.12.0",
     "remove-accents": "^0.4.1",
-    "rpio": "0.9.14",
+    "rpio": "0.9.23",
     "stream-to-array": "2.3.0"
   }
 }
